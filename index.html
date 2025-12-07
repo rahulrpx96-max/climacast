@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+ <title>Weather App</title>
+ <style>body{
+ margin: 0;
+ font-family: 'rubik',sans-serif;
+ background: #111;
+}
+*{
+    box-sizing: border-box;
+}
+ h1, h3 {
+ font-weight:400;
+ }
+
+
+ .weather-app {
+ min-height: 100vh;
+ background-image: url(./icons/cloudy.jpg);
+ background-position: center;
+ background-repeat: no-repeat;
+ background-size: cover;
+ color: #fff;
+ position: relative;
+ transition: 500ms;
+ opacity: 1;
+ }
+ .weather-app::before {
+ content: "";
+ position: absolute;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 100%;
+ background: rgba(0, 0, 0, 0.3);
+ z-index: 0;
+ }
+
+
+ .container {
+ position: absolute;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 100%;
+ display: flex;
+ justify-content: space-between;
+ align-items: flex-start;
+ flex-direction: column;
+ padding: 2em 3em 4em 3em;
+ }
+
+
+ .container > div {
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ }
+
+
+ .city-time,
+ .temp,
+ .weather {
+ margin: 0 1em;
+ }
+
+
+ .city-time h1 {
+ margin: 0;
+ margin-bottom: 0.2em;
+ font-size: 3em;
+ }
+
+
+ .temp {
+ font-size: 7em;
+ margin: 0;
+ }
+
+
+ .weather img {
+ display: block;
+ margin: 0.5em 0;
+ }
+
+
+.panel {
+ position: absolute;
+ width: 40%;
+ height: 100%;
+ top: 0;
+ right: 0;
+ background: rgba(110, 110, 110, 0.25);
+ box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+ backdrop-filter: blur(10px);
+ -webkit-backdrop-filter: blur(10px);
+ border: 1px solid rgba(255, 255, 255, 0.18);
+ z-index: 1;
+ padding: 3em 2em;
+ overflow-y: scroll;
+}
+
+
+.panel form {
+ margin-bottom: 3em;
+ position: relative;
+}
+
+
+.submit {
+ position: absolute;
+ top: 0;
+ right: 0;
+ padding: 1em;   
+ margin: 0;
+ border: none;
+ outline: none;
+ background: #fa6d1b;
+ color: #fff;
+ cursor: pointer;
+ font-size: 1.2em;
+ transition: 0.4s;
+}
+.submit:hover {
+    background: #fff !important;
+    color: #000;
+}
+
+
+.search {
+ background: none;
+ border: none;
+ border-bottom: 1px #ccc solid;
+ padding: 0 1em 0.5em 0;
+ width: 80%;
+ color: #fff;
+ font-size: 1.1em;
+}
+.search:focus {
+ outline: none;
+}
+.search::placeholder {
+ color: #ccc;
+}
+
+
+.panel ul {
+ padding: 0 0 1em 0;
+ margin: 2em 0;
+ border-bottom: 1px #ccc solid;
+}
+
+
+.panel ul li {
+ color: #ccc;
+ margin: 2.5em 0;
+}
+.panel h4 {
+ margin: 3em 0;
+}
+
+
+.city {
+ display:block;
+ cursor:pointer;
+}
+.city:hover {
+ color: #fff;
+}
+.details li {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+}
+@media screen and (max-width:800px) {}</style>
+</head>
+<body>
+<div class="weather-app">
+    
+ <div class="container">
+ <h3 class="brand">CLIMACAST</h3>
+ <div>
+ <h1 class="temp">16&#176</h1>
+ <div class="city-time">
+ <h1 class="name">Bhubaneswar</h1>
+ <small>
+ <span class="time">09.30</span>
+ <span class="date">Tuesday Aug 19</span>
+ </small>
+ </div>
+ <div class="weather">
+ <img 
+ src="icons/cloudy.png"
+ class="icon"
+ width="50"
+ height="50"
+ />
+<span class="condition">CLOUDY</span>
+ </div>
+ </div>
+ </div>
+
+
+ <div class="panel">
+ <form id="location-input">
+ <input
+ type="text"
+ class="search"
+ placeholder="search location..."
+ />
+ <button type="submit" class="submit">🔍</button>
+ </form>
+        
+ <ul class="cities">
+ <li class="city">kolkata</li>
+ <li class="city">mumbai</li>
+ <li class="city">delhi</li>
+ <li class="city">chennai</li>
+ </ul>
+        
+ <h4>Weather Details</h4>
+ <ul class="details">
+ <li><span>Cloudy</span><span class="cloud">89%</span></li>
+ <li><span>Humidity</span><span class="humidity">64%</span></li>
+ <li><span>Wind</span><span class="wind">8Km/h</span></li>
+ </ul>
+ </div>
+</div>
+<script>const app = document.querySelector('.weather-app');
+const temp = document.querySelector('.temp');
+const dateOutput = document.querySelector('.date');
+const timeOutput = document.querySelector('.time');
+const conditionOutput = document.querySelector('.condition');
+const nameOutput = document.querySelector('.name');
+const icon = document.querySelector('.icon');
+const cloudOutput = document.querySelector('.cloud');
+const humidityOutput = document.querySelector('.humidity');
+const windOutput = document.querySelector('.wind');
+const form = document.getElementById('location-input');
+const search = document.querySelector('.search');
+const btn = document.querySelector('.submit');
+const cities = document.querySelectorAll('.city');
+
+
+const API_KEY = "f384ae6dffc642038a0165838250608";
+
+
+let cityInput = "London";
+cities.forEach((city) => {
+ city.addEventListener('click', (e) => {
+ cityInput = e.target.innerHTML;
+ fetchWeatherData();
+ app.style.opacity = "0";
+});
+});
+form.addEventListener('submit', (e) => {
+ e.preventDefault();
+
+
+ if (search.value.length === 0) {
+ alert('Please type in a city name');
+ } else {
+ cityInput = search.value;
+ fetchWeatherData();
+ search.value = "";
+ app.style.opacity = "0";
+ }
+});
+function dayOfTheWeek(day, month, year) {
+ const weekday = [
+ "Sunday", "Monday", "Tuesday", "Wednesday",
+ "Thursday", "Friday", "Saturday"
+ ];
+ return weekday[new Date(`${year}-${month}-${day}`).getDay()];
+}
+function fetchWeatherData() {
+ fetch(`https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${cityInput}`)
+ .then(response => response.json())
+ .then(data => {
+ console.log(data);
+ temp.innerHTML = data.current.temp_c + "&#176;";
+ conditionOutput.innerHTML = data.current.condition.text;
+ const date = data.location.localtime;
+ const y = parseInt(date.substr(0, 4));
+ const m = parseInt(date.substr(5, 2));
+ const d = parseInt(date.substr(8, 2));
+ const time = date.substr(11);
+ dateOutput.innerHTML = `${dayOfTheWeek(d, m, y)} ${d}/${m}/${y}`;
+ timeOutput.innerHTML = time;
+ nameOutput.innerHTML = data.location.name;
+ let timeOfDay = data.current.is_day ? "day" : "night";
+ const code = data.current.condition.code;
+  if (code === 1000) {
+ icon.src = `./icons/${timeOfDay}/clear.png`;
+ app.style.backgroundImage = `url(./icons/${timeOfDay}/clear.jpg)`;
+ btn.style.background = timeOfDay === "night" ? "#181e27" : "#e5ba92";
+ } else if (
+ [1003, 1006, 1009, 1030, 1069, 1087, 1135, 1273, 1276, 1279, 1282].includes(code)
+ ) {
+ icon.src = `./icons/${timeOfDay}/cloudy.png`;
+ app.style.backgroundImage = `url(./icons/${timeOfDay}/cloudy.jpg)`;
+ btn.style.background = timeOfDay === "night" ? "#181e27" : "#fa6d1b";
+ } else if (
+ [1063, 1069, 1072, 1150, 1153, 1180, 1183, 1186, 1189,
+ 1192, 1195, 1204, 1207, 1240, 1243, 1246, 1249, 1252].includes(code)
+ ) {
+ icon.src = `./icons/${timeOfDay}/rainy.png`;
+ app.style.backgroundImage = `url(./icons/${timeOfDay}/rainy.jpg)`;
+ btn.style.background = timeOfDay === "night" ? "#325c80" : "#647d75";
+ } else {
+ icon.src = `./icons/${timeOfDay}/snowy.png`;
+ app.style.backgroundImage = `url(./icons/${timeOfDay}/snowy.jpg)`;
+ btn.style.background = timeOfDay === "night" ? "#1b1b1b" : "#4d72aa";
+ }
+
+
+ cloudOutput.innerHTML = data.current.cloud + "%";
+ humidityOutput.innerHTML = data.current.humidity + "%";
+ windOutput.innerHTML = data.current.wind_kph + " km/h";
+
+
+ app.style.opacity = "1";
+ })
+ .catch(() => {
+ alert('City not found, please try again');
+ app.style.opacity = "1";
+});
+}
+function detectUserLocation() {
+ if (navigator.geolocation) {
+ navigator.geolocation.getCurrentPosition((position) => {
+ const lat = position.coords.latitude;
+ const lon = position.coords.longitude;
+ cityInput = `${lat},${lon}`;
+ fetchWeatherData();
+ }, () => {
+ fetchWeatherData();
+ });
+} else {
+ fetchWeatherData();
+}
+}
+detectUserLocation();</script>
+</body>
+</html>
